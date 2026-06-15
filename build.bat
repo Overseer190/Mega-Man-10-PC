@@ -2,25 +2,45 @@
 REM ===========================================================================
 REM build.bat - Build MegaMan 10 Remake and copy assets to out/
 REM ===========================================================================
+REM
+REM Requires MinGW-w64 (x86_64-posix-seh).  Make sure g++.exe is in PATH.
+REM ===========================================================================
 
 setlocal
 
-set SDL_DLL=SDL3-3.4.10\x86_64-w64-mingw32\bin\SDL3.dll
-set BASS_DLL=bass24\x64\bass.dll
-set BASSMIDI_DLL=bassmidi24\x64\bassmidi.dll
+set SDL_DIR=SDL3-3.4.10\x86_64-w64-mingw32
+set BASS_DIR=bass24
+set BASSMIDI_DIR=bassmidi24
+set SDL_DLL=%SDL_DIR%\bin\SDL3.dll
+set BASS_DLL=%BASS_DIR%\x64\bass.dll
+set BASSMIDI_DLL=%BASSMIDI_DIR%\x64\bassmidi.dll
 set SF2_SRC=src\Music\MIDI\MM10.sf2
 set MID_SRC=src\Music\MIDI\14_StrikeMan.mid
 set WAV_SRC=src\SFX\SoundEffect.wav
 
 REM ----------------------------------------------------------------------
-REM 1. Build via Makefile
+REM 1. Compile
 REM ----------------------------------------------------------------------
 echo [BUILD] Compiling...
-make all
-if %ERRORLEVEL% neq 0 (
-    echo [BUILD] FAILED  --  see errors above.
-    exit /b %ERRORLEVEL%
-)
+
+if not exist out mkdir out
+
+g++ -std=c++17 -Wall -Wextra -O2 ^
+    -I%SDL_DIR%\include -I%BASS_DIR%\c -I%BASSMIDI_DIR%\c ^
+    -c src\main.cpp -o out\main.o
+if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
+
+g++ -std=c++17 -Wall -Wextra -O2 ^
+    -I%SDL_DIR%\include -I%BASS_DIR%\c -I%BASSMIDI_DIR%\c ^
+    -c src\midi_player.cpp -o out\midi_player.o
+if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
+
+g++ out\main.o out\midi_player.o -o out\megaman10.exe ^
+    -L%BASS_DIR%\c\x64 -L%BASSMIDI_DIR%\c\x64 -L%SDL_DIR%\lib ^
+    -lbass -lbassmidi -lSDL3_test -lSDL3 -lm
+if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
+
+echo [BUILD] out\megaman10.exe
 
 REM ----------------------------------------------------------------------
 REM 2. Copy DLLs and assets alongside the exe
