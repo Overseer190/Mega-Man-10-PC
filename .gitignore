@@ -1,0 +1,13 @@
+# Build output
+out/
+*.o
+*.exe
+
+# IDE / editor junk
+.vs/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
